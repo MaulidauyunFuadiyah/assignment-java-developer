@@ -3,15 +3,6 @@ package org.ctcorp.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -22,51 +13,48 @@ import io.vertx.mutiny.sqlclient.Row;
 import io.vertx.mutiny.sqlclient.RowSet;
 import io.vertx.mutiny.sqlclient.Tuple;
 
-//@Entity
-//@Table(name = "table_post")
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @RegisterForReflection
 public class Post {
-	private Long id;
-	private String title;
-	private String content;
-//	private List<Tag> tags = new ArrayList<Tag>();
+	public Long id;
+	public String title;
+	public String content;
 	
-//	@Id
-//	@GeneratedValue
-//	@Column(name = "id")
-//	public Long getId() {
-//		return id;
-//	}
-//	public void setId(Long id) {
-//		this.id = id;
-//	}
-//	
-//	@Column(name = "title")
-//	public String getTitle() {
-//		return title;
-//	}
-//	public void setTitle(String title) {
-//		this.title = title;
-//	}
-//	
-//	@Column(name = "content")
-//	public String getContent() {
-//		return content;
-//	}
-//	public void setContent(String content) {
-//		this.content = content;
-//	}
-//	
-//	@ManyToMany
-//	@JoinTable(name = "table_post_tag", joinColumns = @JoinColumn(name = "id_post", referencedColumnName = "id_post"),
-//    inverseJoinColumns = @JoinColumn(name = "id_tag", referencedColumnName = "id_tag"))
-//	public List<Tag> getTags() {
-//		return tags;
-//	}
-//	public void setTags(List<Tag> tag) {
-//		this.tags = tag;
-//	}
+	
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public static Multi<Post> getPost() {
+		return post;
+	}
+
+	public static void setPost(Multi<Post> post) {
+		Post.post = post;
+	}
+
+	public static Multi<Post> post;
 	
 	public Post() {
 		
@@ -78,14 +66,22 @@ public class Post {
 		this.content = content;
 	}
 	
-//	public Content(String content) {
-//		this.content = content;
-//	}
-//	
+
 	public static Multi<Post> findAll(PgPool client) {
-		return client.query("SELECT id, title, content FROM table_post ORDER BY title ASC").execute()
-				.onItem().transformToMulti(set -> Multi.createFrom().iterable(set))
-				.onItem().transform(Post::from);
+		System.out.println("start-------------------------------------------------");
+		try {
+			post = client.query("SELECT id, title, content FROM table_post ORDER BY title ASC").execute()
+					.onItem().transformToMulti(set -> Multi.createFrom().iterable(set))
+					.onItem().transform(Post::from);
+			System.out.println("post -----------------------------------------------" + post.toString());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return post;
+//		return client.query("SELECT id, title, content FROM table_post ORDER BY title ASC").execute()
+//				.onItem().transformToMulti(set -> Multi.createFrom().iterable(set))
+//				.onItem().transform(Post::from);
 	}
 	
 	public static Uni<Post> findById(PgPool client, Long id) {
